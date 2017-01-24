@@ -9,17 +9,33 @@ def special_match(strg, search=re.compile(r'^[#\.\n]+$').search):
     return not bool(search(strg))
 
 def check_pattern(tetriminos):
-
+#    nxt
+    plage = [-1, 0, 1]
+    for i in tetriminos:
+        prv = None
+        for cd in i:
+            connection = 0
+            if prv != None:
+                if not (prv[0] - cd[0] in plage and prv[1] - cd[1] in plage):
+                    print prv[0] - cd[0]
+                    print prv[1] - cd[1]
+                    print prv, cd
+                    print connection, tetriminos.index(i)
+                    return False
+#            if not (connection == 1 or connection == 2):
+#                 return False
+            prv = cd
+    node = 0
     return True
 
-def arg_check():
+def check_arguments():
     length = len(sys.argv)
     if length < 2:
             exit_error("Error: No file input")
     elif length > 2:
         print "Warning: Too much arguments. Ignoring all but the first argument."
 
-arg_check()
+check_arguments()
 try :
     file = open(sys.argv[1], 'r')
 except IOError:
@@ -70,5 +86,6 @@ for i in tetriraw:
         exit_error("Error: Lack of sharps in pattern")
     tetriminos.append(sharp)
 
+print tetriminos
 if not check_pattern(tetriminos):
     exit_error("Error: pattern failure")
