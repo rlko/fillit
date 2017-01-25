@@ -6,9 +6,6 @@ import re
 from util import exit_error
 from util import split
 
-def special_match(strg, search=re.compile(r'^[#\.\n]+$').search):
-    return not bool(search(strg))
-
 def check_arguments():
     length = len(sys.argv)
     if length < 2:
@@ -26,35 +23,35 @@ def dump_file(filename):
     file.close()
     return lines
 
+def special_match(strg, search=re.compile(r'^[#\.\n]+$').search):
+    return not bool(search(strg))
+
 def parse(filename):
     lines = dump_file(filename)
     if lines == None:
         exit_error("Error: Invalid file")
+
     cleaned = []
+
     for u in lines:
-####
-#    if not special_match(u) and len(u) == 5:
-#        cleaned.append(u.translate(None, '\n'))
-#        cleaned.append(u)
-#    elif u == "\n":
-#        cleaned.append(u)
-##-> Seems ok, without having to clean the \n
         if (not special_match(u) and len(u) == 5) or u == "\n":
             cleaned.append(u)
         else:
             exit_error("Error")
+
     alone = False
     length = 0
     newline = None
+
     for i in cleaned:
         if not i == "\n":
                 alone = True
         else:
-                if alone == True and length == 4:
-                        alone = False
-                        length = -1
-                else :
-                        exit_error("Error: Too much newline(s)")
+            if alone == True and length == 4:
+                alone = False
+                length = -1
+            else :
+                exit_error("Error: Too much newline(s)")
         length = length + 1
         newline = i
     if newline == "\n":
@@ -66,9 +63,11 @@ def parse(filename):
 
 def build_patterns(tetriraw):
     if tetriraw == None:
-        exit_error("Unexpected error: tetriraw should not be null")
+        exit_error("Unexpected error #1")
+
     nt = 0
     tetriminos = []
+
     for i in tetriraw:
         y = 0
         ns = 0
@@ -101,10 +100,34 @@ def check_patterns(tetriminos):
             return False
     return True
 
+def make_solver(size):
+    i = 0
+    solver = []
+
+    while i < size:
+        j = 0
+        while j < size:
+            cd = [j, i]
+            solver.append(cd)
+            j += 1
+        i += 1 
+    return solver
+
+def counter():
+    if 'cnt' not in counter.__dict__:
+        counter.cnt = 1
+    counter.cnt += 1
+    return counter.cnt
+
+def resolve(ttm):
+    size = counter()
+    solver = make_solver(size)
+    resolution = []
+
+
 if not check_arguments():
     exit_error("Error: No file input")
 tetriminos = build_patterns(parse(sys.argv[1]))
 if not check_patterns(tetriminos):
     exit_error("Error: pattern failure")
-
-print tetriminos
+resolve(tetriminos)
