@@ -120,10 +120,8 @@ def counter():
     counter.cnt += 1
     return counter.cnt
 
-
-
 def fill_it(ttm, grid, r, i, size, l):
-    
+   
     if l == 4:
         return True
     cd = [r[0] + ttm[i][l][0], r[1] + ttm[i][l][1]]
@@ -131,7 +129,6 @@ def fill_it(ttm, grid, r, i, size, l):
             if fill_it(ttm, grid, r, i, size, l + 1):
                 grid[cd[0]][cd[1]] = chr(65 + i)
                 return True
-    print "pas de place"
     return False
 
 def baka_step(grid, size, i):
@@ -141,44 +138,48 @@ def baka_step(grid, size, i):
                 grid[u][j] = '.'
 
 # ttm[tetrimino][sharp][x/y]
-# ttm[tetrimino][sharp][0/1]
+#  "      "        "   [0/1]
 
 def print_grid(grid, size):
     for i in range(size):
         str = ""
         for j in range(size):
-            str = str + grid[i][j]
+            str = str + grid[j][i]
         print str
 
 def reset_grid(grid, size):
-    for i in grid:
-        for u in i:
-            u = '.'
+    for i in range(size):
+        for u in range(size):
+            grid[i][u] = '.'
 
-def resolve(ttm):
-    size = counter()
-    solver, grid = make_solver(size)
-
+def solve(ttm, grid, solver, size, nt):
     clock = []
+
     for i in range(26):
         clock.append(0)
     i = 0
-    nt = len(ttm)
     while i != nt:
         if clock[i] == size * size:
             i = i - 1
             if i < 0:
-                print_grid(grid,size)
-                reset_grid(grid, size)
-                resolve(ttm)
+                return False
             clock[i + 1] = 0
-            clock[i]+= 1
+            clock[i] = clock[i] + 1
             baka_step(grid, size, i)
-        if fill_it(ttm, grid, solver[i], i, size, 0):
+        if fill_it(ttm, grid, solver[clock[i]], i, size, 0):
             i = i + 1
         else:
-            clock[i] += 1
-    print_grid(grid, size)
+            clock[i] = clock[i] + 1
+    return True
+
+def resolve(ttm):
+    size = counter()
+    solver, grid = make_solver(size)
+    if solve(ttm, grid, solver, size, len(ttm)):
+        print_grid(grid, size)
+    else:
+        reset_grid(grid, size)
+        resolve(ttm)
 
 if not check_arguments():
     exit_error("Error: No file input")
