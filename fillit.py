@@ -3,89 +3,108 @@
 import sys
 import re
 
-from util import *
+from util import exit_error
+from util import split
 
 def special_match(strg, search=re.compile(r'^[#\.\n]+$').search):
     return not bool(search(strg))
 
-def check_pattern(tetriminos):
-#    nxt
-    plage = [-1, 0, 1]
-    for i in tetriminos:
-        prv = None
-        for cd in i:
-            connection = 0
-            if prv != None:
-                if not (prv[0] - cd[0] in plage and prv[1] - cd[1] in plage):
-                    print prv[0] - cd[0]
-                    print prv[1] - cd[1]
-                    print prv, cd
-                    print connection, tetriminos.index(i)
-                    return False
-#            if not (connection == 1 or connection == 2):
-#                 return False
-            prv = cd
-    node = 0
-    return True
-
 def check_arguments():
     length = len(sys.argv)
     if length < 2:
-            exit_error("Error: No file input")
+        return False
     elif length > 2:
         print "Warning: Too much arguments. Ignoring all but the first argument."
+    return True
 
-check_arguments()
-try :
-    file = open(sys.argv[1], 'r')
-except IOError:
-    exit_error("Error: Invalid file")
-lines = file.readlines()
-file.close()
-cleaned = []
-for u in lines:
-    if not special_match(u) and len(u) == 5:
-        cleaned.append(u.translate(None, '\n'))
-    elif u == "\n":
-        cleaned.append(u)
-    else:
-        exit_error("Error")
-alone = False
-length = 0
-for i in cleaned:
-    if not i == "\n":
-            alone = True
-    else:
-            if alone == True and length == 4:
-                    alone = False
-                    length = -1
-            else :
-                    exit_error("Error: Too much newline(s)")
-    length = length + 1
-if i == "\n":
-    exit_error("Error: Newline excess at EOF")
-cleaned = filter(lambda i: i != "\n", cleaned)
-tetriraw = split(cleaned, 4)
+def dump_file(filename):
+    try :
+        file = open(filename, 'r')
+    except IOError:
+        return None
+    lines = file.readlines()
+    file.close()
+    return lines
 
-nt = 0
-tetriminos = []
-for i in tetriraw:
-    y = 0
-    ns = 0
-    sharp = []
-    for u in i:
-        for x, needle in enumerate(u):
-            if needle == '#':
-                if ns == 0:
-                    first_cd = [x, y]
-                cd = [x - first_cd[0], y - first_cd[1]]
-                sharp.append(cd)
-                ns = ns + 1
-        y = y + 1
-    if not ns == 4:
-        exit_error("Error: Lack of sharps in pattern")
-    tetriminos.append(sharp)
+def parse(filename):
+    lines = dump_file(filename)
+    if lines == None:
+        exit_error("Error: Invalid file")
+    cleaned = []
+    for u in lines:
+####
+#    if not special_match(u) and len(u) == 5:
+#        cleaned.append(u.translate(None, '\n'))
+#        cleaned.append(u)
+#    elif u == "\n":
+#        cleaned.append(u)
+##-> Seems ok, without having to clean the \n
+        if (not special_match(u) and len(u) == 5) or u == "\n":
+            cleaned.append(u)
+        else:
+            exit_error("Error")
+    alone = False
+    length = 0
+    newline = None
+    for i in cleaned:
+        if not i == "\n":
+                alone = True
+        else:
+                if alone == True and length == 4:
+                        alone = False
+                        length = -1
+                else :
+                        exit_error("Error: Too much newline(s)")
+        length = length + 1
+        newline = i
+    if newline == "\n":
+        exit_error("Error: Newline excess at EOF")
+    elif newline == None:
+        exit_error("Error: file is empty")
+    cleaned = filter(lambda i: i != "\n", cleaned)
+    return split(cleaned, 4)
+
+def build_patterns(tetriraw):
+    if tetriraw == None:
+        exit_error("Unexpected error: tetriraw should not be null")
+    nt = 0
+    tetriminos = []
+    for i in tetriraw:
+        y = 0
+        ns = 0
+        sharp = []
+        for u in i:
+            for x, needle in enumerate(u):
+                if needle == '#':
+                    if ns == 0:
+                        first_cd = [x, y]
+                    cd = [x - first_cd[0], y - first_cd[1]]
+                    sharp.append(cd)
+                    ns = ns + 1
+            y = y + 1
+        if not ns == 4:
+            exit_error("Error: Lack of sharps in pattern")
+        tetriminos.append(sharp)
+    return tetriminos
+
+def check_patterns(tetriminos):
+    for i in tetriminos:
+        node = 0
+        for cd in i:
+            for cd2 in i:
+                if (cd2[0] == cd[0] and cd2[1] + 1 == cd[1]) or \
+                    (cd2[0] == cd[0] and cd2[1] - 1 == cd[1]) or \
+                    (cd[1] == cd2[1] and cd2[0] + 1 == cd[0]) or \
+                    (cd[1] == cd2[1] and cd2[0] - 1 == cd[0]):
+                        node = node + 1
+        if (node < 6):
+            return False
+    return True
+
+if not check_arguments():
+    exit_error("Error: No file input")
+tetriminos = build_patterns(parse(sys.argv[1]))
+if not check_patterns(tetriminos):
+    exit_error("Error: pattern failure")
 
 print tetriminos
-if not check_pattern(tetriminos):
-    exit_error("Error: pattern failure")
