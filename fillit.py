@@ -103,15 +103,16 @@ def check_patterns(tetriminos):
 def make_solver(size):
     i = 0
     solver = []
+    grid = []
 
-    while i < size:
-        j = 0
-        while j < size:
+    for i in range(size):
+        line = []
+        for j in range(size):
             cd = [j, i]
             solver.append(cd)
-            j += 1
-        i += 1 
-    return solver
+            line.append('.')
+        grid.append(line)
+    return solver, grid
 
 def counter():
     if 'cnt' not in counter.__dict__:
@@ -119,11 +120,65 @@ def counter():
     counter.cnt += 1
     return counter.cnt
 
+
+
+def fill_it(ttm, grid, r, i, size, l):
+    
+    if l == 4:
+        return True
+    cd = [r[0] + ttm[i][l][0], r[1] + ttm[i][l][1]]
+    if cd[0] < size and cd[1] < size and cd[0] >= 0 and grid[cd[0]][cd[1]] == '.':
+            if fill_it(ttm, grid, r, i, size, l + 1):
+                grid[cd[0]][cd[1]] = chr(65 + i)
+                return True
+    print "pas de place"
+    return False
+
+def baka_step(grid, size, i):
+    for u in range(size):
+        for j in range(size):
+            if grid[u][j] == chr(65 + i):
+                grid[u][j] = '.'
+
+# ttm[tetrimino][sharp][x/y]
+# ttm[tetrimino][sharp][0/1]
+
+def print_grid(grid, size):
+    for i in range(size):
+        str = ""
+        for j in range(size):
+            str = str + grid[i][j]
+        print str
+
+def reset_grid(grid, size):
+    for i in grid:
+        for u in i:
+            u = '.'
+
 def resolve(ttm):
     size = counter()
-    solver = make_solver(size)
-    resolution = []
+    solver, grid = make_solver(size)
 
+    clock = []
+    for i in range(26):
+        clock.append(0)
+    i = 0
+    nt = len(ttm)
+    while i != nt:
+        if clock[i] == size * size:
+            i = i - 1
+            if i < 0:
+                print_grid(grid,size)
+                reset_grid(grid, size)
+                resolve(ttm)
+            clock[i + 1] = 0
+            clock[i]+= 1
+            baka_step(grid, size, i)
+        if fill_it(ttm, grid, solver[i], i, size, 0):
+            i = i + 1
+        else:
+            clock[i] += 1
+    print_grid(grid, size)
 
 if not check_arguments():
     exit_error("Error: No file input")
