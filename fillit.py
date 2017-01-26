@@ -96,7 +96,7 @@ def check_patterns(tetriminos):
                     (cd[1] == cd2[1] and cd2[0] + 1 == cd[0]) or \
                     (cd[1] == cd2[1] and cd2[0] - 1 == cd[0]):
                         node = node + 1
-        if (node < 6):
+        if node < 6:
             return False
     return True
 
@@ -120,8 +120,10 @@ def counter():
     counter.cnt += 1
     return counter.cnt
 
-def fill_it(ttm, grid, r, i, size, l):
-   
+# ttm[tetrimino][sharp][x/y]
+#  "      "        "   [0/1]
+
+def fill_it(ttm, grid, r, i, size, l): 
     if l == 4:
         return True
     cd = [r[0] + ttm[i][l][0], r[1] + ttm[i][l][1]]
@@ -136,9 +138,6 @@ def baka_step(grid, size, i):
         for j in range(size):
             if grid[u][j] == chr(65 + i):
                 grid[u][j] = '.'
-
-# ttm[tetrimino][sharp][x/y]
-#  "      "        "   [0/1]
 
 def print_grid(grid, size):
     for i in range(size):
