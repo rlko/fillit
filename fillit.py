@@ -127,9 +127,9 @@ def fill_it(ttm, grid, r, i, size, l):
         return True
     cd = [r[0] + ttm[i][l][0], r[1] + ttm[i][l][1]]
     if cd[0] < size and cd[1] < size and cd[0] >= 0 and grid[cd[0]][cd[1]] == '.':
-            if fill_it(ttm, grid, r, i, size, l + 1):
-                grid[cd[0]][cd[1]] = chr(65 + i)
-                return True
+        if fill_it(ttm, grid, r, i, size, l + 1):
+            grid[cd[0]][cd[1]] = chr(65 + i)
+            return True
     return False
 
 def baka_step(grid, size, i):
