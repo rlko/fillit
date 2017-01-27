@@ -6,8 +6,7 @@ import re
 from util import exit_error
 from util import split
 
-def check_arguments():
-    length = len(sys.argv)
+def check_arguments(length):
     if length < 2:
         return False
     elif length > 2:
@@ -180,7 +179,7 @@ def resolve(ttm):
         reset_grid(grid, size)
         resolve(ttm)
 
-if not check_arguments():
+if not check_arguments(len(sys.argv)):
     exit_error("Error: No file input")
 tetriminos = build_patterns(parse(sys.argv[1]))
 if not check_patterns(tetriminos):
